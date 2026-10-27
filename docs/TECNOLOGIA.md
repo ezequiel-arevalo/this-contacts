@@ -5,8 +5,10 @@ Aplicación **full stack local**: frontend, API y base de datos corren en la má
 ## Arquitectura
 
 ```
-Navegador (React)  ──HTTP/JSON──▶  API (Express, solo localhost)  ──Prisma──▶  PostgreSQL
+Navegador (React)  ──HTTP/JSON──▶  API (Laravel, solo localhost)  ──Eloquent──▶  PostgreSQL
 ```
+
+El frontend es una SPA en React; Laravel se usa **solo como API REST** (sin vistas Blade ni Inertia).
 
 ## Stack
 
@@ -14,23 +16,23 @@ Navegador (React)  ──HTTP/JSON──▶  API (Express, solo localhost)  ─�
 
 | Tecnología | Por qué |
 |---|---|
-| **TypeScript** | Tipado en todo el proyecto; los mismos tipos se comparten con el backend. |
+| **TypeScript** | Tipado en todo el frontend: el editor avisa errores antes de ejecutar. |
 | **React** | Interfaz en componentes; estándar del mercado. |
-| **Vite** | Arranque rápido, recarga al guardar y plantilla oficial para React + TypeScript. |
+| **Vite** | Arranque rápido, recarga al guardar y plantilla oficial para React + TypeScript. Su proxy evita configurar CORS en desarrollo. |
 | **Tailwind CSS** | Estilos con clases utilitarias, consistentes y sin archivos CSS que crecen sin control. |
 | **shadcn/ui** | Componentes accesibles (diálogos, formularios, foco y teclado) copiados al proyecto. Su tema *neutral* coincide con la paleta en grises del diseño. |
 | **React Router** | Navegación entre lista, detalle, formulario y respaldo. |
 | **TanStack Query** | Maneja los datos que vienen de la API: carga, caché, errores y actualización después de crear, editar o borrar. Reemplaza a Redux para datos del servidor. |
-| **React Hook Form + Zod** | Formularios con validación, usando los mismos esquemas que valida el backend. |
+| **React Hook Form + Zod** | Formularios con validación en el cliente, para dar respuesta inmediata al usuario. |
 
 ### Backend
 
 | Tecnología | Por qué |
 |---|---|
-| **Node.js + TypeScript** | Mismo lenguaje que el frontend: el esfuerzo de aprendizaje va a lo nuevo (HTTP, API, SQL). |
-| **Express** | El framework de Node más usado y documentado. Mínimo, sin "magia": se entiende qué pasa en cada pedido. |
-| **Zod** | Valida todo lo que llega a la API antes de tocar la base de datos. |
-| **Prisma** | Define las tablas en un esquema legible, genera migraciones y consultas tipadas. |
+| **PHP + Laravel** | Framework con todo integrado (rutas, validación, ORM, migraciones, tests y consola `artisan`), convenciones claras y documentación excelente. PHP tiene gran presencia en el mercado. |
+| **Eloquent** | ORM de Laravel: modelos, relaciones (`hasMany`, `belongsTo`) y consultas sin SQL a mano cuando no hace falta. |
+| **Form Requests** | Validación de todo lo que llega a la API antes de tocar la base de datos. |
+| **Migraciones de Laravel** | Las tablas se definen en código y se versionan con Git. |
 
 ### Base de datos
 
@@ -43,26 +45,26 @@ Navegador (React)  ──HTTP/JSON──▶  API (Express, solo localhost)  ─�
 
 ## Estructura del repositorio
 
-Monorepo con **npm workspaces**: un solo repo, un solo `npm install`.
-
 ```
 this-contacts/
 ├── apps/
-│   ├── web/        # Frontend (React)
-│   └── api/        # Backend (Express + Prisma)
-├── packages/
-│   └── shared/     # Esquemas Zod y tipos compartidos
+│   ├── web/        # Frontend (React) — npm
+│   └── api/        # Backend (Laravel) — Composer
 └── docs/
 ```
+
+## Validación en dos lados
+
+Al usar lenguajes distintos, las reglas de validación se escriben **dos veces**: Zod en el frontend y Form Requests en Laravel. La fuente de verdad es **el backend**: el frontend valida para dar respuesta rápida, pero la API nunca confía en lo que recibe. Las reglas se documentan en un solo lugar (`docs/`) para mantener ambos lados alineados.
 
 ## Organización del código
 
 **Separación de responsabilidades** en capas, con el patrón Repositorio en ambos lados:
 
-- **Backend:** `rutas → servicios → repositorio → base de datos`
-  - *Rutas:* reciben el pedido HTTP, validan con Zod y responden.
+- **Backend:** `rutas → controladores → servicios → repositorio → Eloquent`
+  - *Controladores:* reciben el pedido HTTP (ya validado por un Form Request) y responden.
   - *Servicios:* reglas de negocio (por ejemplo, favoritos primero, importación JSON).
-  - *Repositorio:* único lugar que habla con Prisma.
+  - *Repositorio:* único lugar que habla con Eloquent.
 - **Frontend:** los componentes no hacen `fetch` directo; usan un cliente de API (`contactsApi`) consumido desde TanStack Query.
 
 ## API REST
@@ -70,11 +72,11 @@ this-contacts/
 | Método | Ruta | Acción |
 |---|---|---|
 | `GET` | `/api/contacts?q=` | Listar contactos (con búsqueda opcional) |
-| `GET` | `/api/contacts/:id` | Obtener un contacto |
+| `GET` | `/api/contacts/{id}` | Obtener un contacto |
 | `POST` | `/api/contacts` | Crear contacto |
-| `PUT` | `/api/contacts/:id` | Editar contacto |
-| `PATCH` | `/api/contacts/:id/favorite` | Marcar o desmarcar favorito |
-| `DELETE` | `/api/contacts/:id` | Eliminar contacto |
+| `PUT` | `/api/contacts/{id}` | Editar contacto |
+| `PATCH` | `/api/contacts/{id}/favorite` | Marcar o desmarcar favorito |
+| `DELETE` | `/api/contacts/{id}` | Eliminar contacto |
 | `GET` | `/api/export` | Descargar respaldo JSON |
 | `POST` | `/api/import` | Restaurar desde respaldo JSON (reemplaza la agenda) |
 
@@ -84,8 +86,8 @@ La API escucha solo en `127.0.0.1`, así no es accesible desde otras máquinas d
 
 | Herramienta | Qué prueba |
 |---|---|
-| **Vitest** | Lógica de negocio y esquemas de validación (frontend y backend). |
-| **Supertest** | Endpoints de la API contra una base de datos de prueba. |
+| **Pest** (sobre PHPUnit) | Servicios, validaciones y endpoints de la API con los helpers HTTP de Laravel, contra una base de datos de prueba. |
+| **Vitest** | Lógica y esquemas de validación del frontend. |
 | **Testing Library** | Componentes de React. |
 | **Playwright** | Flujo completo en el navegador (crear, buscar, editar, eliminar, exportar). |
 
@@ -93,13 +95,13 @@ La API escucha solo en `127.0.0.1`, así no es accesible desde otras máquinas d
 
 Al ser una app local, el deploy es poder clonarla y levantarla en cualquier máquina:
 
-1. Instalar Node.js y PostgreSQL.
-2. Clonar el repo y ejecutar `npm install`.
-3. Copiar `.env.example` a `.env` con la URL de la base de datos.
-4. Crear las tablas con las migraciones de Prisma.
-5. Iniciar con `npm run dev` (desarrollo) o compilar y ejecutar con `npm start`.
+1. Instalar PHP, Composer, Node.js y PostgreSQL.
+2. Clonar el repo.
+3. Backend: `composer install`, copiar `.env.example` a `.env` con los datos de la base, generar la clave de la app y ejecutar las migraciones.
+4. Frontend: `npm install`.
+5. Iniciar la API y el frontend.
 
-Los pasos exactos se documentan en el README durante el desarrollo.
+Los pasos exactos se documentan en el README durante el desarrollo. Se usa la última versión estable de Laravel al iniciar el desarrollo.
 
 ## Versionado
 
@@ -113,14 +115,16 @@ Los pasos exactos se documentan en el README durante el desarrollo.
 | localStorage / app solo frontend | Se eligió aprender backend y base de datos. |
 | Login y cuentas | App local de un solo usuario; no aporta. |
 | Docker | Agrega complejidad innecesaria para una app local. |
+| Node.js + Express | Evaluado; se eligió Laravel por preferencia personal y su presencia en el mercado. |
+| NestJS | Mucha estructura y abstracción sobre Express. |
 | SQLite | Más simple, pero se priorizó PostgreSQL por potencia, tipos estrictos y mercado. |
 | MySQL / MariaDB | Misma complejidad de instalación que PostgreSQL, con menos demanda en proyectos nuevos. |
 | MongoDB | No permite aprender relaciones ni SQL, lo más formativo para este proyecto. |
-| NestJS | Mucha estructura y abstracción sobre Express; primero conviene entender Express. |
+| Blade / Inertia | El frontend es una SPA en React; Laravel funciona solo como API. |
 | Redux | TanStack Query resuelve mejor los datos que vienen de una API. |
 | daisyUI | Temas coloridos que habría que neutralizar; shadcn/ui encaja mejor con el diseño. |
 | PWA / modo offline | La app depende de una API local; queda como mejora futura. |
 
 ## Estado
 
-Tecnología cerrada el 27/10/2026: full stack local con React, Express, Prisma y PostgreSQL. Cualquier cambio de stack queda para después de la v1.0.0.
+Tecnología cerrada el 27/10/2026: full stack local con React, Laravel y PostgreSQL. Cualquier cambio de stack queda para después de la v1.0.0.
