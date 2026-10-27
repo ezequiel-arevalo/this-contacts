@@ -43,7 +43,7 @@
 - Etiquetas o grupos
 - Importar / exportar vCard (`.vcf`)
 - Recordatorio de cumpleaños
-- Modo oscuro
+- Menú de ajustes: colores, tamaños y tipografías (incluye modo oscuro)
 
 ## Estado
 
