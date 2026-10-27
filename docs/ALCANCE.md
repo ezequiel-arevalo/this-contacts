@@ -2,40 +2,57 @@
 
 > Aplicación para agendar y gestionar contactos.
 
+Aplicación **full stack** que corre **localmente**: frontend, backend (API) y base de datos en la máquina del usuario.
+
 ## Principios
 
-- **Personal:** un solo usuario, sin cuentas ni login.
-- **Offline:** los datos se guardan en el dispositivo del usuario y nunca salen de él.
-- **Sin nada raro:** sin publicidad, métricas, trackers ni servicios de terceros.
+- **Un solo usuario, sin cuentas ni login.**
+- **Local:** la API y la base de datos corren en la máquina del usuario. La API escucha solo en `localhost`, así nadie desde otra máquina puede acceder sin autenticación.
+- **Privacidad:** los datos no salen de la máquina del usuario.
+- **Sin nada raro:** sin publicidad, métricas ni trackers.
 
 ## Funcionalidades del MVP
 
 | # | Funcionalidad | Detalle |
 |---|---|---|
-| 1 | Crear contacto | Formulario con validación básica (formato de email y teléfono). |
+| 1 | Crear contacto | Formulario con validación (formato de email y teléfono), en el frontend **y** en el backend. |
 | 2 | Listar contactos | Orden alfabético, agrupados por inicial. |
 | 3 | Ver detalle | Vista con todos los datos del contacto. |
 | 4 | Editar contacto | Mismo formulario que la creación, con los datos cargados. |
 | 5 | Eliminar contacto | Requiere confirmación. |
 | 6 | Buscar | Por nombre, teléfono o email. |
 | 7 | Favoritos | Se marcan con una estrella y se muestran primero en la lista. |
-| 8 | Exportar / importar JSON | Respaldo y traspaso de la agenda entre dispositivos. |
+| 8 | Exportar / importar JSON | Respaldo descargable de la agenda y restauración desde ese archivo. |
 
-## Modelo de datos: Contacto
+## Modelo de datos
 
-| Campo | Tipo | Obligatorio |
+Modelo **relacional**: un contacto tiene muchos teléfonos y muchos emails.
+
+```
+Contacto 1 ──── N Telefono
+         1 ──── N Email
+```
+
+### Contacto
+
+| Campo | Tipo | Notas |
 |---|---|---|
-| `id` | string (UUID) | ✅ (interno) |
-| `nombre` | string | ✅ |
-| `apellido` | string | — |
-| `telefonos` | string[] | — |
-| `emails` | string[] | — |
-| `direccion` | string | — |
-| `cumpleanos` | fecha (YYYY-MM-DD) | — |
-| `notas` | string | — |
-| `favorito` | boolean (por defecto `false`) | — |
-| `creadoEn` | fecha y hora ISO | ✅ (interno) |
-| `actualizadoEn` | fecha y hora ISO | ✅ (interno) |
+| `id` | UUID | Clave primaria |
+| `nombre` | texto | Obligatorio |
+| `apellido` | texto | Opcional |
+| `direccion` | texto | Opcional |
+| `cumpleanos` | fecha | Opcional |
+| `notas` | texto | Opcional |
+| `favorito` | booleano | Por defecto `false` |
+| `creadoEn` / `actualizadoEn` | fecha y hora | Automáticos |
+
+### Telefono y Email
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | UUID | Clave primaria |
+| `contactoId` | UUID | Clave foránea → Contacto. Borrar un contacto borra sus teléfonos y emails |
+| `valor` | texto | El número o la dirección de email |
 
 ## Fuera del MVP (mejoras futuras)
 
@@ -47,4 +64,4 @@
 
 ## Estado
 
-Alcance definido el 27/10/2026. Los campos pueden revisarse en etapas posteriores.
+Alcance definido el 27/10/2026. Revisado el mismo día: pasa a ser una aplicación full stack local, con un solo usuario y sin login.
