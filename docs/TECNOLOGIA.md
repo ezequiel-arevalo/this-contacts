@@ -24,6 +24,7 @@ El frontend es una SPA en React; Laravel se usa **solo como API REST** (sin vist
 | **React Router** | Navegación entre lista, detalle, formulario y respaldo. |
 | **TanStack Query** | Maneja los datos que vienen de la API: carga, caché, errores y actualización después de crear, editar o borrar. Reemplaza a Redux para datos del servidor. |
 | **React Hook Form + Zod** | Formularios con validación en el cliente, para dar respuesta inmediata al usuario. |
+| **Biome** | Linter y formateador en una sola herramienta (reemplaza a ESLint + Prettier), muy rápido. Elegido además porque typescript-eslint todavía no soporta TypeScript 7, lo que impedía instalar el proyecto con ESLint. |
 
 ### Backend
 
@@ -126,6 +127,7 @@ Los pasos exactos se documentan en el README durante el desarrollo. Se usa la ú
 | Blade / Inertia / starter kit de React | El frontend es una SPA independiente en React; Laravel funciona solo como API. El starter kit además trae login por defecto. |
 | Redux | TanStack Query resuelve mejor los datos que vienen de una API. |
 | daisyUI | Temas coloridos que habría que neutralizar; shadcn/ui encaja mejor con el diseño. |
+| ESLint | typescript-eslint (8.72) solo soporta TypeScript < 6.1 y la plantilla de Vite trae TypeScript 7: conflicto de dependencias. Se optó por Biome en lugar de bajar TypeScript a 6.0. |
 | PWA / modo offline | La app depende de una API local; queda como mejora futura. |
 
 ## Estado
