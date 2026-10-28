@@ -45,13 +45,16 @@ El frontend es una SPA en React; Laravel se usa **solo como API REST** (sin vist
 
 ## Estructura del repositorio
 
+Monorepo: dos proyectos independientes en el mismo repositorio, comunicados por la API REST.
+
 ```
 this-contacts/
-├── apps/
-│   ├── web/        # Frontend (React) — npm
-│   └── api/        # Backend (Laravel) — Composer
+├── frontend/       # SPA en React + TypeScript — npm
+├── backend/        # API en Laravel (instalación limpia, sin starter kit) — Composer
 └── docs/
 ```
+
+Se evaluó el **starter kit de React de Laravel** (Inertia + React + shadcn/ui) y se descartó para este proyecto: une frontend y backend en un solo proyecto sin API REST e incluye login por defecto, que esta app no usa. Queda como candidato para un próximo proyecto.
 
 ## Validación en dos lados
 
@@ -120,7 +123,7 @@ Los pasos exactos se documentan en el README durante el desarrollo. Se usa la ú
 | SQLite | Más simple, pero se priorizó PostgreSQL por potencia, tipos estrictos y mercado. |
 | MySQL / MariaDB | Misma complejidad de instalación que PostgreSQL, con menos demanda en proyectos nuevos. |
 | MongoDB | No permite aprender relaciones ni SQL, lo más formativo para este proyecto. |
-| Blade / Inertia | El frontend es una SPA en React; Laravel funciona solo como API. |
+| Blade / Inertia / starter kit de React | El frontend es una SPA independiente en React; Laravel funciona solo como API. El starter kit además trae login por defecto. |
 | Redux | TanStack Query resuelve mejor los datos que vienen de una API. |
 | daisyUI | Temas coloridos que habría que neutralizar; shadcn/ui encaja mejor con el diseño. |
 | PWA / modo offline | La app depende de una API local; queda como mejora futura. |
